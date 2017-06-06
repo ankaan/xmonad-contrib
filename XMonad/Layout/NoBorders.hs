@@ -107,11 +107,11 @@ data ConfigurableBorder p w = ConfigurableBorder p [w] deriving (Read, Show)
 instance (Read p, Show p, SetsAmbiguous p) => LayoutModifier (ConfigurableBorder p) Window where
     unhook (ConfigurableBorder _p s) = asks (borderWidth . config) >>= setBorders s
 
-    redoLayout (ConfigurableBorder p s) _ mst wrs = do
+    redoLayout (ConfigurableBorder p _) _ mst wrs = do
         ws <- withWindowSet (\wset -> return (hiddens p wset mst wrs))
-        asks (borderWidth . config) >>= setBorders (s \\ ws)
+        asks (borderWidth . config) >>= setBorders (W.integrate' mst \\ ws)
         setBorders ws 0
-        return (wrs, Just $ ConfigurableBorder p ws)
+        return (wrs, Just $ ConfigurableBorder p $ W.integrate' mst)
 
 -- | SetsAmbiguous allows custom actions to generate lists of windows that
 -- should not have borders drawn through 'ConfigurableBorder'
